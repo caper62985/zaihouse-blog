@@ -1,0 +1,328 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>0 元白嫖 AI 生视频 · Kaggle 免费 GPU 跑 MiniMax-H3 完整流程 · ZAIHOUSE Blog</title><meta name="description" content="MiniMax-H3 视频+音频生成模型 32GB，Kaggle 自带 19.5GB 磁盘装不下。用 Kaggle Datasets 挂载突破磁盘限制，全程 0 元，一键包下载，小白也能跑通。"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><script>
+// 深色模式：优先读本地选择，其次跟随系统。放 head 避免闪烁。
+(function () {
+  try {
+    var t = localStorage.getItem('zai-theme');
+    if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    document.documentElement.dataset.theme = t;
+  } catch (e) {}
+})();
+</script><!-- 旧的自建 pixel 埋点已移除（2026-10-02）：analytics/worker.js 的路由从未绑定成功，
+     zaihouse.com/__/pixel 一直返 404，每页白发一个请求且数据全丢。
+     统计改由 Cloudflare Web Analytics 在边缘自动注入，无需代码。 --><link rel="stylesheet" href="/zaihouse-blog/_astro/BaseLayout.DdqeB0Oc.css"></head><body><header class="site-header"><div class="site-header-inner"><a href="/" class="site-logo"><span class="site-logo-icon">Z</span><span>zai 主理 · 在舍</span></a><nav class="site-nav"><a href="/">博客</a><a href="https://zaihouse.com" rel="noopener">主站</a><a href="https://shop.zaihouse.com" rel="noopener">小店</a><a href="/posts/zaihouse-template-99/" rel="noopener">十分钟个人站</a><a href="/contact/">联系</a><button class="theme-toggle" id="theme-toggle" title="切换深色/浅色" aria-label="切换深色/浅色">🌙</button></nav></div></header><div class="read-progress" id="read-progress" style="display:none"></div><script>
+// 主题切换
+(function () {
+  var btn = document.getElementById('theme-toggle');
+  function paint() {
+    btn.textContent = document.documentElement.dataset.theme === 'dark' ? '☀️' : '🌙';
+  }
+  paint();
+  btn.addEventListener('click', function () {
+    var next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem('zai-theme', next); } catch (e) {}
+    paint();
+  });
+})();
+</script><main class="site-main"><div class="post-layout"><article class="post-page"><h1>0 元白嫖 AI 生视频 · Kaggle 免费 GPU 跑 MiniMax-H3 完整流程</h1><div class="post-meta"><span>📅 2026-10-02</span><span>⏱ 12 分钟</span><span class="tag">免费 AI 生图</span><span class="tag">不花一分钱</span><span class="tag">Kaggle 免费 GPU</span><span class="tag">ComfyUI</span><span class="tag">AI 视频</span></div><h1 id="0-元白嫖-ai-生视频--kaggle-免费-gpu-跑-minimax-h3-完整流程">0 元白嫖 AI 生视频 · Kaggle 免费 GPU 跑 MiniMax-H3 完整流程</h1>
+<blockquote>
+<p>本文 + 一键包，<strong>全程不花一分钱</strong>。本地电脑 0 配置、0 安装。</p>
+</blockquote>
+<h2 id="-先看视频--b-站--youtube-同一支">🎬 先看视频 · B 站 / YouTube 同一支</h2>
+<a class="yt-hero-card" href="https://www.bilibili.com/video/BV16qa26jEAX" target="_blank" rel="noopener">
+<span class="yt-hero-card-thumb"><img src="/ppt/yt/BV16qa26jEAX.jpg" width="1672" height="940" alt="Kaggle 免费 GPU 跑 MiniMax H3 参考图生视频 视频封面"></span>
+<span class="yt-hero-card-body">
+<span class="yt-card-eyebrow">📺 B 站 · 国内不卡</span>
+<span class="yt-hero-card-title">不花一分钱｜Kaggle免费GPU跑MiniMax H3 参考图生视频 3步跑通</span>
+<span class="yt-hero-card-sub">32GB 模型绕开 19.5GB 磁盘限制 · 一键脚本 + 工作流 JSON · 7 分 19 秒</span>
+<span class="yt-hero-card-cta"><span class="yt-play-icon"></span> B 站观看完整版</span>
+</span>
+<span class="yt-hero-card-arrow">→</span>
+</a>
+<a class="yt-hero-card" href="https://youtu.be/GACyBamzSHo" target="_blank" rel="noopener">
+<span class="yt-hero-card-thumb"><img src="/ppt/yt/GACyBamzSHo.jpg" width="1280" height="720" alt="Kaggle 免费 GPU 跑 MiniMax H3 参考图生视频 视频封面"></span>
+<span class="yt-hero-card-body">
+<span class="yt-card-eyebrow">▶️ YouTube · 海外顺</span>
+<span class="yt-hero-card-title">不花一分钱｜Kaggle免费GPU跑MiniMax H3 参考图生视频 3步跑通</span>
+<span class="yt-hero-card-sub">32GB 模型绕开 19.5GB 磁盘限制 · 一键脚本 + 工作流 JSON</span>
+<span class="yt-hero-card-cta"><span class="yt-play-icon"></span> YouTube 观看完整版</span>
+</span>
+<span class="yt-hero-card-arrow">→</span>
+</a>
+<p style="margin:0 0 20px;font-size:14px;color:#666">两支是同一支视频，<strong>国内点上面 B 站、海外点下面 YouTube</strong>。视频里把 <strong>32GB 装进 19.5GB 磁盘</strong> 那一步讲得最细，文字版这里有。</p>
+<h2 id="为什么写这篇">为什么写这篇？</h2>
+<p><a href="/posts/kaggle-comfyui-free-guide/">生图那篇</a>里的 FLUX.1 只有 1.3 GB，Kaggle 那 19.5 GB 磁盘随便装。</p>
+<p><strong>MiniMax-H3 不一样</strong> —— 它是<strong>视频 + 音频一起生成</strong>（人物说话，嘴型和声音对得上），模型一共 <strong>32.02 GB</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>大小</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>MiniMax-H3-Ref2VA-Pruned-Q4_K_M.gguf</code></td>
+<td>11.56 GB</td>
+<td>H3 主模型（视频+音频）</td>
+</tr>
+<tr>
+<td><code>Qwen3-VL-32B-Instruct-MiniMax-H3-L0-49-IQ4_XS.gguf</code></td>
+<td>13.44 GB</td>
+<td>文本编码器</td>
+</tr>
+<tr>
+<td><code>Qwen3-VL-32B-Instruct-MiniMax-H3-L0-49-mmproj-BF16.gguf</code></td>
+<td>1.20 GB</td>
+<td>视觉投影</td>
+</tr>
+<tr>
+<td><code>minimax_h3_video_vae_fp16.safetensors</code></td>
+<td>5.21 GB</td>
+<td>视频 VAE</td>
+</tr>
+<tr>
+<td><code>minimax_h3_audio_vae_fp32.safetensors</code></td>
+<td>605.25 MB</td>
+<td>音频 VAE</td>
+</tr>
+<tr>
+<td><strong>合计</strong></td>
+<td><strong>32.02 GB</strong></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>32 GB 装不进 19.5 GB 的磁盘</strong> —— 这就是绝大多数人卡住的地方。</p>
+<p><strong>这帖的解法：把模型传成 Kaggle Dataset 挂载 —— 不占 Notebook 磁盘。</strong></p>
+<h2 id="这帖解决什么">这帖解决什么</h2>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>✅ 突破 Kaggle 19.5 GB 磁盘限制（Dataset 挂载 + 软链接）</span></span>
+<span class="line"><span>✅ 一键包下载，代码不用手抄</span></span>
+<span class="line"><span>✅ 自动开隧道、自检节点、固定 ComfyUI 版本</span></span>
+<span class="line"><span>✅ 全程 0 元（GPU 免费 30 小时/周，Dataset 存储也免费）</span></span></code></pre>
+<h2 id="3-步流程">3 步流程</h2>
+<h3 id="step-1注册-kaggle">Step 1：注册 Kaggle</h3>
+<ul>
+<li>打开 <a href="https://www.kaggle.com">https://www.kaggle.com</a> 注册（<strong>完全免费</strong>）</li>
+<li>不需要绑卡，不需要翻墙</li>
+<li>邮箱 + Google 账号即可</li>
+</ul>
+<blockquote>
+<p>💡 <strong>手机号验证</strong>：第一次开 GPU 时 Kaggle 会要求<strong>手机号验证</strong>（防滥用）—— <strong>中国 +86 手机号也可以</strong>，验证后<strong>永久免费</strong>。</p>
+</blockquote>
+<h3 id="step-2把-5-个模型传成-dataset">Step 2：把 5 个模型传成 Dataset</h3>
+<p><strong>这一步是本帖的核心。</strong> 模型不进 Notebook 磁盘，进 Dataset —— 所以不受 19.5 GB 限制。</p>
+<ol>
+<li>Kaggle 右上角 → <strong>Datasets</strong> → <strong>+ New Dataset</strong></li>
+<li>名字建议填 <code>minimaxh3</code>，可见性选 <strong>Private</strong>（别公开）</li>
+<li><strong>上传那 5 个文件</strong>（下载地址在下面第 4 节，<strong>全部实测可访问</strong>）</li>
+<li>上传完点 <strong>New Version</strong> → 勾选 <strong>Make dataset available</strong>（这句决定能不能挂载）</li>
+</ol>
+<blockquote>
+<p>⚠️ <strong>这一步最花时间</strong>：32 GB 上传，看网速，<strong>建议睡前传</strong>。</p>
+<p>5 个文件一个都不能少，<strong>名字必须完全一致</strong>（大小写敏感）。</p>
+</blockquote>
+<h3 id="step-3开-notebook-跑脚本">Step 3：开 Notebook 跑脚本</h3>
+<ol>
+<li><strong>New Notebook</strong> → <strong>Add Input</strong> → 选你刚传的 Dataset</li>
+<li><strong>Settings</strong> → Accelerator 选 <strong>GPU T4×2</strong>、<strong>Internet On</strong></li>
+<li>点 <strong>+ Code</strong>，把 <code>1.Kaggle一键运行.py</code> 整个粘进去</li>
+<li><strong>改第 7 行</strong>：把 <code>casper62985/minimaxh3</code> 换成你自己的</li>
+<li><strong>Run All</strong>，等 5-10 分钟出链接</li>
+</ol>
+<blockquote>
+<p>💡 第 7 行填错也能跑 —— 脚本下面会自动在 <code>/kaggle/input</code> 里扫描兜底。</p>
+</blockquote>
+<h2 id="-一键包下载">📥 一键包下载</h2>
+<p>🔗 <strong><a href="https://blog.zaihouse.com/downloads/minimax-h3-kaggle.zip">minimax-h3-kaggle.zip</a></strong></p>
+<p>（右键“另存为”即可 —— 比从网页复制长脚本靠谱，<strong>少一行就报错</strong>）</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>minimax-h3-kaggle/</span></span>
+<span class="line"><span>├── 1.Kaggle一键运行.py            整个粘进一个 Cell</span></span>
+<span class="line"><span>├── 2.H3工作流_参考图生视频.json    跑完后在 ComfyUI 里导入</span></span>
+<span class="line"><span>└── 3.使用说明.txt                  完整步骤 + 常见问题</span></span></code></pre>
+<h3 id="脚本已经帮你处理好的事">脚本已经帮你处理好的事</h3>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>✅ 自动扫描 /kaggle/input 兜底（填错路径也能跑）</span></span>
+<span class="line"><span>✅ 固定 ComfyUI 到含 H3 原生节点的 commit（不会自动升级跑崩）</span></span>
+<span class="line"><span>✅ 软链接挂模型，不复制、不占 Notebook 磁盘</span></span>
+<span class="line"><span>✅ 保留 Kaggle 自带的 CUDA 版 PyTorch（不重装，避免版本冲突）</span></span>
+<span class="line"><span>✅ 自动修一个已知类型标注兼容问题</span></span>
+<span class="line"><span>✅ 自动开 cloudflared 隧道并打印公网地址</span></span>
+<span class="line"><span>✅ 启动后自检 7 个关键节点，缺哪个会明确报出来</span></span></code></pre>
+<h2 id="-核心逻辑看懂-3-段就够了">📄 核心逻辑（看懂 3 段就够了）</h2>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="python"><code><span class="line"><span style="color:#6A737D"># 1) 你的 Dataset 路径（第 7 行，改这里）</span></span>
+<span class="line"><span style="color:#79B8FF">DATA</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> Path(</span><span style="color:#9ECBFF">'/kaggle/input/datasets/你的用户名/minimaxh3'</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D"># 2) 软链接，不是复制 —— 复制会吃磁盘，正是要避开的东西</span></span>
+<span class="line"><span style="color:#F97583">for</span><span style="color:#E1E4E8"> folder, names </span><span style="color:#F97583">in</span><span style="color:#79B8FF"> FILES</span><span style="color:#E1E4E8">.items():</span></span>
+<span class="line"><span style="color:#F97583">    for</span><span style="color:#E1E4E8"> name </span><span style="color:#F97583">in</span><span style="color:#E1E4E8"> names:</span></span>
+<span class="line"><span style="color:#E1E4E8">        (</span><span style="color:#79B8FF">COMFY</span><span style="color:#F97583">/</span><span style="color:#9ECBFF">'models'</span><span style="color:#F97583">/</span><span style="color:#E1E4E8">folder</span><span style="color:#F97583">/</span><span style="color:#E1E4E8">name).symlink_to(</span><span style="color:#79B8FF">DATA</span><span style="color:#F97583">/</span><span style="color:#E1E4E8">name)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D"># 3) 启动 + 开临时隧道拿公网地址</span></span>
+<span class="line"><span style="color:#E1E4E8">server </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> Popen([python, </span><span style="color:#9ECBFF">'main.py'</span><span style="color:#E1E4E8">, </span><span style="color:#9ECBFF">'--listen'</span><span style="color:#E1E4E8">, </span><span style="color:#9ECBFF">'127.0.0.1'</span><span style="color:#E1E4E8">, </span><span style="color:#9ECBFF">'--port'</span><span style="color:#E1E4E8">, port, </span><span style="color:#79B8FF">...</span><span style="color:#E1E4E8">])</span></span>
+<span class="line"><span style="color:#E1E4E8">proxy  </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> Popen([cloudflared, </span><span style="color:#9ECBFF">'tunnel'</span><span style="color:#E1E4E8">, </span><span style="color:#9ECBFF">'--url'</span><span style="color:#E1E4E8">, </span><span style="color:#F97583">f</span><span style="color:#9ECBFF">'http://127.0.0.1:</span><span style="color:#79B8FF">{</span><span style="color:#E1E4E8">port</span><span style="color:#79B8FF">}</span><span style="color:#9ECBFF">'</span><span style="color:#E1E4E8">])</span></span></code></pre>
+<p><strong>为什么用软链接</strong>：Kaggle 把 Dataset 挂在 <code>/kaggle/input</code>（只读、不占磁盘）。<strong>复制</strong>到 Notebook 磁盘 = 白吃 32 GB，还是会爆；<strong>软链接</strong>只是指过去，实际文件不占地方。</p>
+<h2 id="-跑起来之后">🎬 跑起来之后</h2>
+<ol>
+<li>脚本会打印一个 <code>trycloudflare.com</code> 链接</li>
+<li>浏览器打开 → <strong>Load Workflow</strong> → 导入 <code>2.H3工作流_参考图生视频.json</code></li>
+<li><strong>在 <code>LoadImage</code> 节点上传你的参考图</strong>（建议正脸清晰照）</li>
+<li>改 prompt → <strong>Queue Prompt</strong></li>
+<li>视频输出在 <code>ComfyUI/output/</code></li>
+</ol>
+<p><strong>工作流默认参数</strong>（先照默认跑一次确认能通）：</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>分辨率 512 × 288      帧数 73      采样 12 步</span></span>
+<span class="line"><span>输出 H3_口播_第一段.mp4（视频 + 音频一起出）</span></span></code></pre>
+<p><strong>参考图决定什么</strong>：它会<strong>保持参考图里的脸部特征、发型、服装、背景和机位不变</strong>。所以参考图越清晰正脸，效果越稳。</p>
+<h2 id="-5-个模型下载地址">📥 5 个模型下载地址</h2>
+<p><strong>以下链接全部实测可访问（HTTP 200）</strong>，每个都能直接点开下载：</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>文件</th>
+<th>大小</th>
+<th>用途</th>
+<th>下载</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>MiniMax-H3-Ref2VA-Pruned-Q4_K_M.gguf</code></td>
+<td>11.56 GB</td>
+<td>H3 主模型</td>
+<td><a href="https://huggingface.co/Abiray/MiniMax-H3-Pruned-GGUF/resolve/main/MiniMax-H3-Ref2VA-Pruned-Q4_K_M.gguf">点此下载</a></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>Qwen3-VL-32B-Instruct-MiniMax-H3-L0-49-IQ4_XS.gguf</code></td>
+<td>13.44 GB</td>
+<td>文本编码器</td>
+<td><a href="https://huggingface.co/nif0/Qwen3-VL-32B-Instruct-MiniMax-H3-GGUF/resolve/main/Qwen3-VL-32B-Instruct-MiniMax-H3-L0-49-IQ4_XS.gguf">点此下载</a></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>Qwen3-VL-32B-Instruct-MiniMax-H3-L0-49-mmproj-BF16.gguf</code></td>
+<td>1.20 GB</td>
+<td>视觉投影</td>
+<td><a href="https://huggingface.co/nif0/Qwen3-VL-32B-Instruct-MiniMax-H3-GGUF/resolve/main/Qwen3-VL-32B-Instruct-MiniMax-H3-L0-49-mmproj-BF16.gguf">点此下载</a></td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>minimax_h3_video_vae_fp16.safetensors</code></td>
+<td>5.21 GB</td>
+<td>视频 VAE</td>
+<td><a href="https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/vae/minimax_h3_video_vae_fp16.safetensors">点此下载</a></td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>minimax_h3_audio_vae_fp32.safetensors</code></td>
+<td>605.25 MB</td>
+<td>音频 VAE</td>
+<td><a href="https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/vae/minimax_h3_audio_vae_fp32.safetensors">点此下载</a></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>ℹ️ 32 GB 建议<strong>用电脑下载</strong>再传 Kaggle。<strong>Kaggle 服务器能直连 huggingface</strong>（IP 段没被墙），在 Notebook 里拉不用翻墙。</p>
+</blockquote>
+<h2 id="不花一分钱的具体清单">不花一分钱的具体清单</h2>
+<table>
+<thead>
+<tr>
+<th>资源</th>
+<th>工具</th>
+<th>价格</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>云端 GPU</td>
+<td>Kaggle T4×2 32GB</td>
+<td><strong>不花一分钱</strong></td>
+</tr>
+<tr>
+<td>模型存储</td>
+<td>Kaggle Private Dataset</td>
+<td><strong>不花一分钱</strong></td>
+</tr>
+<tr>
+<td>AI 视频模型</td>
+<td>MiniMax-H3（开源权重）</td>
+<td><strong>不花一分钱</strong></td>
+</tr>
+<tr>
+<td>工作流引擎</td>
+<td>ComfyUI（MIT）</td>
+<td><strong>不花一分钱</strong></td>
+</tr>
+<tr>
+<td>公网隧道</td>
+<td>Cloudflare Tunnel</td>
+<td><strong>不花一分钱</strong></td>
+</tr>
+<tr>
+<td>教程 + 代码</td>
+<td>本文</td>
+<td><strong>不花一分钱</strong></td>
+</tr>
+</tbody>
+</table>
+<h2 id="为什么不花一分钱">为什么不花一分钱？</h2>
+<table>
+<thead>
+<tr>
+<th>其他方案</th>
+<th>月费</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Runway Gen-4</td>
+<td>$15/月（≈ ¥108）</td>
+</tr>
+<tr>
+<td>Pika</td>
+<td>$8/月（≈ ¥58）</td>
+</tr>
+<tr>
+<td>Kling / 可灵</td>
+<td>¥几十起</td>
+</tr>
+<tr>
+<td><strong>Kaggle 免费方案</strong></td>
+<td><strong>不花一分钱</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>差别在于</strong>：Runway 那类给你的是<strong>封装好的网页</strong>，Kaggle 给的是<strong>完整 GPU</strong> —— 你想跑什么模型都行。</p>
+<h2 id="常见问题">常见问题</h2>
+<p><strong>Q：为什么要传 Dataset，不能直接下吗？</strong>
+A：能，但 32 GB 装不进 19.5 GB 磁盘。脚本有直连兜底，但大概率失败。</p>
+<p><strong>Q：Dataset 有容量限制吗？</strong>
+A：Private Dataset 存储免费，容量远够 32 GB。</p>
+<p><strong>Q：免费额度够用吗？</strong>
+A：每周 30 小时 GPU。<strong>注意免费额度同时只能跑一个 Notebook</strong> —— 跟你<a href="/posts/kaggle-comfyui-free-guide/">生图那个教程</a>会互相抢，<strong>同时只能开一个</strong>。</p>
+<p><strong>Q：出视频要多久？</strong>
+A：T4 上跑 73 帧 512×288 通常<strong>几分钟到十几分钟</strong>。<strong>建议先照默认参数跑一次。</strong></p>
+<p><strong>Q：为什么脚本要固定 ComfyUI 的 commit？</strong>
+A：H3 节点需要特定版本。<strong>不固定的话 ComfyUI 一升级就可能跑不起来</strong> —— 这是踩过的坑。</p>
+<p><strong>Q：能商用吗？</strong>
+A：<strong>请自行向 MiniMax 确认模型 license</strong>，以官方最新条款为准，商用前请自行确认。</p>
+<p><strong>Q：手机能用吗？</strong>
+A：不能。Kaggle Notebook 需要电脑。</p>
+<h2 id="️-免责声明">⚠️ 免责声明</h2>
+<ul>
+<li>本教程仅供学习用途</li>
+<li><strong>不花一分钱 ≠ 100% 免费</strong>（Kaggle 有速率限制 + 模型 license 另有规定）</li>
+<li>实际效果取决于模型版本 + 硬件配置</li>
+<li>商用前请检查模型 license</li>
+</ul>
+<h2 id="-相关内容">📚 相关内容</h2>
+<ul>
+<li>📖 <a href="/posts/kaggle-comfyui-free-guide/">0 元白嫖 AI 生图 · FLUX.1 完整流程</a>（同一套 Kaggle 环境，出图篇）</li>
+<li>📖 <a href="/posts/openclaw-30min-guide/">4 个一键脚本（全部免费 Apache-2.0）</a></li>
+<li>🎁 <a href="/posts/newbie-rewards-2026/">新人注册优惠</a>（SiliconFlow 一毛钱换 16 元券）</li>
+</ul>
+<!-- 4 脚本免费下载块（替代 2026-09-23 前面包多 9.9 元引流块） --><div class="free-pack-promo" style="background:linear-gradient(135deg,#ecfdf5 0%,#d1fae5 100%);border:2px solid #10b981;border-radius:12px;padding:24px;margin:32px 0;box-shadow:0 4px 12px rgba(16,185,129,0.15)"><div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px"><div style="background:#10b981;color:white;padding:6px 14px;border-radius:6px;font-weight:700;font-size:13px">🆓 全部免费</div><div style="color:#065f46;font-weight:600;font-size:14px">Apache-2.0 开源 · 4 个一键脚本 + 选择指南</div></div><h3 style="margin:0 0 12px 0;color:#064e3b;font-size:22px">🚀 0 基础跑通跨境电商 · 4 个一键脚本</h3><p style="color:#065f46;margin:0 0 16px 0;font-size:15px;line-height:1.6">耗时一个月 + 花费近万沉淀出的 <strong>4 个一键脚本</strong>（裸机 VPS → OpenClaw → 公网 → 跨境独立站），小白 30 秒对号入座，5-15 分钟跑通。<strong>全部开源免费</strong>。</p><a href="/downloads/zaihouse-pack-v1.1.0.zip" download class="cta" style="display:inline-block;background:#10b981;color:white;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:18px">📥 立即下载 zaihouse-pack-v1.1.0.zip (95 KB)</a><div style="margin-top:16px;font-size:13px;color:#047857">💡 <strong>Apache-2.0 开源协议</strong> · 商用 / 修改 / 分发都可以 · 详情见 <a href="/posts/openclaw-30min-guide/#-完整-4-脚本免费下载" style="color:#047857;text-decoration:underline">主帖下载区</a></div></div><div style="margin-top:32px;padding-top:24px;border-top:1px solid #e5e7eb"><a href="/">← 返回博客首页</a></div></article><aside class="post-toc"><nav aria-label="文章目录"><div class="post-toc-title">目录</div><a href="#-先看视频--b-站--youtube-同一支">🎬 先看视频 · B 站 / YouTube 同一支</a><a href="#为什么写这篇">为什么写这篇？</a><a href="#这帖解决什么">这帖解决什么</a><a href="#3-步流程">3 步流程</a><a href="#step-1注册-kaggle" class="toc-h3">Step 1：注册 Kaggle</a><a href="#step-2把-5-个模型传成-dataset" class="toc-h3">Step 2：把 5 个模型传成 Dataset</a><a href="#step-3开-notebook-跑脚本" class="toc-h3">Step 3：开 Notebook 跑脚本</a><a href="#-一键包下载">📥 一键包下载</a><a href="#脚本已经帮你处理好的事" class="toc-h3">脚本已经帮你处理好的事</a><a href="#-核心逻辑看懂-3-段就够了">📄 核心逻辑（看懂 3 段就够了）</a><a href="#-跑起来之后">🎬 跑起来之后</a><a href="#-5-个模型下载地址">📥 5 个模型下载地址</a><a href="#不花一分钱的具体清单">不花一分钱的具体清单</a><a href="#为什么不花一分钱">为什么不花一分钱？</a><a href="#常见问题">常见问题</a><a href="#️-免责声明">⚠️ 免责声明</a><a href="#-相关内容">📚 相关内容</a></nav></aside></div><script type="module">document.querySelectorAll(`.post-page pre`).forEach(e=>{let t=document.createElement(`button`);t.type=`button`,t.className=`code-copy`,t.textContent=`复制`,t.addEventListener(`click`,async()=>{let n=e.querySelector(`code`),r=n?n.innerText:e.innerText;try{await navigator.clipboard.writeText(r),t.textContent=`已复制 ✓`,setTimeout(()=>{t.textContent=`复制`},1500)}catch{t.textContent=`复制失败`}}),e.appendChild(t)});var e=Array.from(document.querySelectorAll(`.post-toc a`)),t=e.map(e=>document.getElementById(e.getAttribute(`href`).slice(1))).filter(Boolean),n=()=>{let n=null;for(let e of t)e.getBoundingClientRect().top<=140&&(n=e);e.forEach(e=>e.classList.toggle(`active`,!!n&&e.getAttribute(`href`)===`#`+n.id))};window.addEventListener(`scroll`,n,{passive:!0}),n();</script></main><footer class="site-footer"><div>zai 主理 · 在舍</div><div style="margin-top:6px">信条：用最少的钱、最干净的方法，最简单的操作，把一件想做的事做到能跑。</div><div style="margin-top:8px"><a href="https://zaikafei.com" rel="noopener">zaikafei.com</a> ·<a href="https://shop.zaihouse.com" rel="noopener">shop.zaihouse.com</a> ·<a href="/contact/">关于 / 联系</a></div><div style="margin-top:8px">✉️ <a href="mailto:support@zaihouse.com">support@zaihouse.com</a></div></footer></body></html>
