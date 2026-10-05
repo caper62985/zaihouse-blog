@@ -1,0 +1,41 @@
+---
+// ZAI HOUSE 在舍 logo（SVG，黑底白房子 + 红色横梁）
+const { size = 120, withText = true } = Astro.props;
+---
+<div class="zai-logo" style={`width:${size}px;height:${size}px`}>
+<svg viewBox="0 0 200 200" width={size} height={size} xmlns="http://www.w3.org/2000/svg">
+  <!-- 黑底 -->
+  <rect width="200" height="200" fill="#000"/>
+  <!-- 红色横梁（屋顶顶部） -->
+  <rect x="50" y="58" width="100" height="10" fill="#dc2626"/>
+  <!-- 房子主体（白色线条） -->
+  <!-- 屋顶斜线 -->
+  <path d="M 55 100 L 100 65 L 145 100 Z" fill="none" stroke="#fff" stroke-width="6" stroke-linejoin="round"/>
+  <!-- 左墙 -->
+  <path d="M 60 100 L 60 140" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+  <!-- 右墙 -->
+  <path d="M 140 100 L 140 140" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+  <!-- 地面 -->
+  <path d="M 50 140 L 150 140" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+  <!-- 门 -->
+  <path d="M 90 140 L 90 115 L 110 115 L 110 140" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round"/>
+  <!-- 文字 ZAI HOUSE -->
+  {withText && (
+    <>
+      <text x="100" y="172" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="20" font-weight="700" fill="#fff" letter-spacing="3">ZAI HOUSE</text>
+      <text x="100" y="192" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="14" font-weight="500" fill="#fff" letter-spacing="2">在 舍</text>
+    </>
+  )}
+</svg>
+</div>
+
+<style>
+.zai-logo {
+  display: inline-block;
+  background: #000;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,.15);
+}
+.zai-logo svg { display: block; }
+</style>

@@ -1,0 +1,19 @@
+前置准备（只需做一次）：在 Cloudflare 后台获取 Token
+登录 Cloudflare 控制台，进入 Zero Trust -> Networks -> Tunnels。
+
+点击 Create a Tunnel，选择 Cloudflared，给隧道取个名字（比如 kaggle-comfyui）。
+
+在创建页面找到 Install and run connector，复制框里 --token 后面那一长串密文（即你的 MY_CF_TOKEN）。
+
+在页面下方的 Public Hostname 中添加解析：
+
+Subdomain：自定义子域名（如 comfyui）
+
+Domain：选择你自己的主域名（如 yourdomain.com）
+
+Service：选择 HTTP，地址填写 127.0.0.1:8188
+
+点击保存即可。
+
+
+cloudflared tunnel run --token eyJhIjoiYWE0ZGE1MzE3OTk5NTI5NWI3YjVjMTI3MmVhZDYxNzUiLCJ0IjoiNTUxMDQ2YzAtM2MzNS00Y2MzLWJiMjEtOWZjNWFlMDk2YzE5IiwicyI6Ik16VTRNV1ZsWkdVdE16YzNNUzAwTldZd0xXRm1ZalV0WVdJMk5qWmlaR05rTVRrMiJ9
