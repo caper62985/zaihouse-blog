@@ -1,0 +1,215 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>新人不用手·一键脚本 · VPS 当订阅节点 固定 IP · SOCKS5 / 小火箭 / Clash 三样直接用 · ZAIHOUSE Blog</title><meta name="description" content="一个 sing-box 一键脚本：VPS 上跑一条命令，直接出 SOCKS5（给指纹浏览器）、VLESS 链接（给小火箭 / V2rayNG）、Clash 订阅链接（给 Clash Verge / Mihomo）。附防火墙设置和故障恢复。"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><script>
+// 深色模式：优先读本地选择，其次跟随系统。放 head 避免闪烁。
+(function () {
+  try {
+    var t = localStorage.getItem('zai-theme');
+    if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    document.documentElement.dataset.theme = t;
+  } catch (e) {}
+})();
+</script><!-- 旧的自建 pixel 埋点已移除（2026-10-02）：analytics/worker.js 的路由从未绑定成功，
+     zaihouse.com/__/pixel 一直返 404，每页白发一个请求且数据全丢。
+     统计改由 Cloudflare Web Analytics 在边缘自动注入，无需代码。 --><link rel="stylesheet" href="/zaihouse-blog/_astro/BaseLayout.DdqeB0Oc.css"></head><body><header class="site-header"><div class="site-header-inner"><a href="/" class="site-logo"><span class="site-logo-icon">Z</span><span>zai 主理 · 在舍</span></a><nav class="site-nav"><a href="/">博客</a><a href="https://zaihouse.com" rel="noopener">主站</a><a href="https://shop.zaihouse.com" rel="noopener">小店</a><a href="/posts/zaihouse-template-99/" rel="noopener">十分钟个人站</a><a href="/contact/">联系</a><button class="theme-toggle" id="theme-toggle" title="切换深色/浅色" aria-label="切换深色/浅色">🌙</button></nav></div></header><div class="read-progress" id="read-progress" style="display:none"></div><script>
+// 主题切换
+(function () {
+  var btn = document.getElementById('theme-toggle');
+  function paint() {
+    btn.textContent = document.documentElement.dataset.theme === 'dark' ? '☀️' : '🌙';
+  }
+  paint();
+  btn.addEventListener('click', function () {
+    var next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem('zai-theme', next); } catch (e) {}
+    paint();
+  });
+})();
+</script><main class="site-main"><div class="post-layout"><article class="post-page"><h1>新人不用手·一键脚本 · VPS 当订阅节点 固定 IP · SOCKS5 / 小火箭 / Clash 三样直接用</h1><div class="post-meta"><span>📅 2026-10-02</span><span>⏱ 3 分钟</span><span class="tag">一键脚本</span><span class="tag">VPS</span><span class="tag">固定 IP</span><span class="tag">开源免费</span><span class="tag">科学上网</span></div><h1 id="新人不用手一键脚本--vps-当订阅节点-固定-ip--socks5--小火箭--clash-三样直接用">新人不用手·一键脚本 · VPS 当订阅节点 固定 IP · SOCKS5 / 小火箭 / Clash 三样直接用</h1>
+<blockquote>
+<p>裸机 VPS → 跑一条命令 → <strong>SOCKS5 + 小火箭链接 + Clash 订阅 + 防火墙全配好</strong>。免费开源，Apache-2.0。</p>
+</blockquote>
+<h2 id="-先看视频--9-分-28-秒全程实录">🎬 先看视频 · 9 分 28 秒全程实录</h2>
+<a class="yt-hero-card" href="https://youtu.be/8np_kuR9Kno" target="_blank" rel="noopener">
+<span class="yt-hero-card-thumb"><img src="/ppt/yt/8np_kuR9Kno.jpg" width="1280" height="720" alt="一条命令把 VPS 变成订阅节点 SOCKS5 VLESS Clash 三链接直接用 视频封面"></span>
+<span class="yt-hero-card-body">
+<span class="yt-card-eyebrow">▶️ YouTube · 海外顺</span>
+<span class="yt-hero-card-title">新人不用手·一键脚本 | 一条命令把 VPS 变成订阅节点 SOCKS5/VLESS/Clash 三链接直接用</span>
+<span class="yt-hero-card-sub">30 秒出三个订阅链接 · RoxyBrowser 实测测试成功 · Clash 订阅一起给你</span>
+<span class="yt-hero-card-cta"><span class="yt-play-icon"></span> YouTube 观看完整版</span>
+</span>
+<span class="yt-hero-card-arrow">→</span>
+</a>
+<p>ℹ️ <strong>推荐说明</strong>：本文含推荐 / 邀请链接（带 aff 或邀请码）。你通过链接注册时，商家会给本站一份推荐奖励，<strong>但不会向你多收任何一分钱</strong>——你自己注册该拿的优惠和现金奖励照拿不误，价格与你直接去注册完全一样。推荐这些服务是因为我自己就在用，但排序里不排除主观偏好，<strong>请自行比较后再决定</strong>。不用任何链接也一样能注册。</p>
+<hr>
+<h2 id="装完你会拿到三样东西">装完你会拿到三样东西</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>是什么</th>
+<th>填到哪</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>①</strong></td>
+<td>SOCKS5 + 用户名密码</td>
+<td>指纹浏览器 / AdsPower / Chrome 的「代理」设置</td>
+</tr>
+<tr>
+<td><strong>②</strong></td>
+<td>一个 <code>vless://</code> 链接</td>
+<td>小火箭 / Shadowrocket / V2rayNG 的「订阅」</td>
+</tr>
+<tr>
+<td><strong>③</strong></td>
+<td>一个 yaml 订阅地址</td>
+<td>Clash Verge / Mihomo Party 的「订阅」</td>
+</tr>
+</tbody>
+</table>
+<p><strong>三样是同一个代理的三个入口，用哪个都行，出口 IP 都是你那台 VPS。</strong></p>
+<h2 id="第-1-步--买一台美国-vps">第 1 步 · 买一台美国 VPS</h2>
+<p><strong>只记住一条要求：必须是静态 IP。</strong></p>
+<p>🎁 <a href="https://my.racknerd.com/aff.php?aff=21343" target="_blank" rel="noopener">RackNerd 洛杉矶（推荐）</a> —— 几美元/月。</p>
+<p><strong>买完在服务器上跑一句，确认是美国的</strong>：</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#B392F0">curl</span><span style="color:#9ECBFF"> ipinfo.io</span></span></code></pre>
+<p><strong>看到 <code>country: US</code> 才继续。显示 CN 就换一家。</strong></p>
+<h2 id="第-2-步--跑脚本">第 2 步 · 跑脚本</h2>
+<p><strong>📦 下载（17 KB）</strong>：</p>
+<p><a href="/downloads/singbox-us-v2.5.zip" download>⬇️ 下载 singbox-us-v2.5.zip</a></p>
+<p><strong>传上去并安装</strong>（在自己电脑的终端里跑）：</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#B392F0">scp</span><span style="color:#9ECBFF"> singbox-us-v2.5.zip</span><span style="color:#9ECBFF"> root@你的VPS公网IP:/root/</span></span>
+<span class="line"><span style="color:#B392F0">ssh</span><span style="color:#9ECBFF"> root@你的VPS公网IP</span></span>
+<span class="line"><span style="color:#79B8FF">cd</span><span style="color:#9ECBFF"> /root</span><span style="color:#E1E4E8"> &amp;&amp; </span><span style="color:#B392F0">unzip</span><span style="color:#9ECBFF"> singbox-us-v2.5.zip</span><span style="color:#E1E4E8"> &amp;&amp; </span><span style="color:#79B8FF">cd</span><span style="color:#9ECBFF"> singbox-us</span></span>
+<span class="line"><span style="color:#B392F0">bash</span><span style="color:#9ECBFF"> install-singbox.sh</span></span></code></pre>
+<p><strong>⚠️ <code>bash</code> 不能省</strong> —— 直接 <code>./install-singbox.sh</code> 会因没有执行权限报错。</p>
+<p>等 1-2 分钟，<strong>跑完会打印三样东西</strong>：</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>① SOCKS5   你的IP:1080   用户 proxyuser  密码 xxxxx</span></span>
+<span class="line"><span>② 链接     vless://xxxx@你的IP:2053?...</span></span>
+<span class="line"><span>③ 链接     http://你的IP:8081/xxxxx.yaml</span></span></code></pre>
+<p><strong>📌 端口和密码以你实际看到的为准</strong>，别照抄别人的数字。</p>
+<h2 id="第-3-步--三样东西分别怎么填">第 3 步 · 三样东西分别怎么填</h2>
+<h3 id="-socks5--指纹浏览器--adspower--chrome">① SOCKS5 → 指纹浏览器 / AdsPower / Chrome</h3>
+<p>脚本打印的那组，直接填到「代理」设置里：</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>类型          SOCKS5      ← 别选 HTTP，也别留空</span></span>
+<span class="line"><span>主机 / IP     你的 VPS 公网 IP</span></span>
+<span class="line"><span>端口          脚本给你的实际端口</span></span>
+<span class="line"><span>用户名        脚本给你的用户名</span></span>
+<span class="line"><span>密码          脚本给你的密码</span></span></code></pre>
+<p><strong>AdsPower 填法</strong>：账号管理 → 新增浏览器 → 代理类型选 <code>SOCKS5</code> → 填上面四项 → 代理检测选「美国」。</p>
+<p><strong>Chrome 填法</strong>：设置 → 系统 → 打开代理设置 → 手动代理 → SOCKS5 + 主机端口 + 用户名密码。</p>
+<p><strong>填完先测一下</strong>：把这个 IP 填进代理检测，<strong>显示 US 才往下走</strong>。</p>
+<h3 id="-链接--小火箭--shadowrocket--v2rayng">② 链接 → 小火箭 / Shadowrocket / V2rayNG</h3>
+<p>先把链接取出来：</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#B392F0">cat</span><span style="color:#9ECBFF"> /root/singbox-subscription.txt</span></span></code></pre>
+<p>复制这一行，粘到客户端里：</p>
+<table>
+<thead>
+<tr>
+<th>客户端</th>
+<th>怎么粘</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Shadowrocket（iOS）</td>
+<td>首页右上「+」→ 类型选 Subscribe → 粘贴</td>
+</tr>
+<tr>
+<td>V2rayNG（Android）</td>
+<td>右上「+」→ 订阅组导入 → 粘贴</td>
+</tr>
+</tbody>
+</table>
+<p><strong>换设备不用重装</strong> —— 在新设备上再跑一次 <code>cat /root/singbox-subscription.txt</code>，粘同一行就行。</p>
+<h3 id="-链接--clash-verge--mihomo-party">③ 链接 → Clash Verge / Mihomo Party</h3>
+<p>脚本打印的 <code>http://你的IP:8081/xxxxx.yaml</code>：</p>
+<p><strong>订阅 → 新建 → 粘贴这个地址 → 导入。</strong></p>
+<p><strong>⚠️ 别把 ② 那个 base64 粘给 Clash</strong> —— 它的「订阅」只认 URL，粘 base64 会报格式错。</p>
+<p><strong>⚠️ 导入完把这个服务关掉</strong>：</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#B392F0">systemctl</span><span style="color:#9ECBFF"> stop</span><span style="color:#9ECBFF"> singbox-clash-sub</span><span style="color:#E1E4E8"> &amp;&amp; </span><span style="color:#B392F0">systemctl</span><span style="color:#9ECBFF"> disable</span><span style="color:#9ECBFF"> singbox-clash-sub</span></span></code></pre>
+<p><strong>这个地址等于你的代理密码</strong> —— 谁拿到都能用你的代理。关掉之后 Clash 里已导入的配置照样能用，只是不再自动更新。</p>
+<p><strong>不想要这个地址</strong>（不想多开一个端口）：</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#E1E4E8">ENABLE_CLASH_SUB</span><span style="color:#F97583">=</span><span style="color:#9ECBFF">0</span><span style="color:#B392F0"> bash</span><span style="color:#9ECBFF"> install-singbox.sh</span></span></code></pre>
+<h2 id="第-4-步--验证">第 4 步 · 验证</h2>
+<p><strong>开代理后浏览器访问</strong>：</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>https://ipinfo.io</span></span></code></pre>
+<p><strong>显示的 IP 跟你 VPS 的公网 IP 一样 = 成功。</strong></p>
+<p><strong>隔几天再查一次，IP 一样就是真固定。</strong></p>
+<hr>
+<h2 id="常见问题">常见问题</h2>
+<p><strong>Q：脚本跑一半没输出就退出了？</strong>
+会直接告诉你「第 N 行执行失败（退出码 X）」，把那几行发出来就行。</p>
+<p><strong>Q：提示端口被占用？</strong>
+先看是谁：</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#B392F0">ss</span><span style="color:#79B8FF"> -tulnp</span><span style="color:#F97583"> |</span><span style="color:#B392F0"> grep</span><span style="color:#79B8FF"> 1080</span></span></code></pre>
+<p><strong>如果显示的不是 <code>sing-box</code>（很多 VPS 商家会预装 mihomo），别乱杀</strong> —— 换个端口重装：</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#E1E4E8">SOCKS_PORT</span><span style="color:#F97583">=</span><span style="color:#9ECBFF">1081</span><span style="color:#B392F0"> bash</span><span style="color:#9ECBFF"> install-singbox.sh</span></span></code></pre>
+<p><strong>Q：SOCKS5 连不上？</strong></p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>① 端口对不对（用脚本打印的那个）</span></span>
+<span class="line"><span>② 类型选的是不是 SOCKS5</span></span>
+<span class="line"><span>③ 本机梯子关了没 ← 最常见的一条</span></span>
+<span class="line"><span>④ 防火墙放行了没</span></span></code></pre>
+<p><strong>Q：防火墙改崩了连不上 SSH？</strong></p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#B392F0">bash</span><span style="color:#9ECBFF"> FIREWALL-RESCUE.sh</span></span></code></pre>
+<p><strong>包里的救场脚本。</strong></p>
+<p><strong>Q：想换端口？</strong></p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#E1E4E8">SOCKS_PORT</span><span style="color:#F97583">=</span><span style="color:#9ECBFF">7890</span><span style="color:#B392F0"> bash</span><span style="color:#9ECBFF"> install-singbox.sh</span></span></code></pre>
+<p><strong>Q：重启 VPS 后还有效吗？</strong>
+<strong>服务设了自启，重启后自动恢复。</strong> 但<strong>如果你的 IP 是 DHCP 分配的，重启后公网 IP 会变，链接就失效了</strong> —— 这就是第 1 步要静态 IP 的原因。</p>
+<p><strong>Q：不用了怎么删干净？</strong></p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#B392F0">bash</span><span style="color:#9ECBFF"> uninstall-singbox.sh</span></span></code></pre>
+<hr>
+<h2 id="几条硬提醒">几条硬提醒</h2>
+<p>🔴 <strong>③ 那个订阅地址 = 你的代理密码。</strong> <strong>录视频、分享屏幕之前先关掉它</strong>（命令在第 3 步里）。</p>
+<p>🔴 <strong>凭据别贴到聊天窗口或群里。</strong> 全部参数在：</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#B392F0">cat</span><span style="color:#9ECBFF"> /root/singbox-credentials.txt</span><span style="color:#6A737D">     # 权限 600</span></span></code></pre>
+<p>🔴 <strong>指纹浏览器里的时区 / 语言要跟 IP 对上。</strong> 挂着美国 IP 但时区显示东八区，某些平台的反作弊会直接判异常。</p>
+<p>🔴 <strong>别在代理开着时登录重要账号。</strong> 建议先正常用几天再注册。</p>
+<hr>
+<h2 id="原理--为什么是这三样东西">原理 · 为什么是这三样东西</h2>
+<p><strong>这一节是给你看完步骤之后想理解原理用的，跳过也不影响操作。</strong></p>
+<h3 id="为什么非要静态-ip">为什么非要静态 IP</h3>
+<p>因为<strong>所有客户端的「订阅」本质是一串含 IP 的链接</strong>。IP 一变，链接就指向别的地方了。</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>DHCP 分配的 VPS 重启 → 换了 IP → 链接失效 → 机场节点也可能随时跑路</span></span>
+<span class="line"><span>静态 IP 的 VPS      → 永远是你那个 IP → 链接一直有效</span></span></code></pre>
+<h3 id="为什么机场的美国节点不能用来注册">为什么机场的「美国节点」不能用来注册</h3>
+<p><strong>IP 检测的是归属地，不是流量在哪个机房。</strong></p>
+<p>我实测踩过：有的机场「美国 01/02/03」出口 IP 在 IP 库里登记在<strong>中国</strong> —— 哪怕 Cloudflare 显示 <code>LAX</code>，注册照样被拒。<strong>认准 VPS，查 <code>ipinfo.io</code> 显示 <code>US</code>。</strong></p>
+<h3 id="为什么-socks5-和-vless-是两回事">为什么 SOCKS5 和 VLESS 是两回事</h3>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>SOCKS5   一个「代理协议」，要手填 IP/端口/用户/密码</span></span>
+<span class="line"><span>         简单，但公网上是明文，公共 WiFi 下慎用</span></span>
+<span class="line"><span>         ✅ 指纹浏览器、AdsPower、Chrome 都能直接填</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>VLESS    一个「代理协议 + 伪装 TLS」，用链接导入</span></span>
+<span class="line"><span>         抗干扰更好、UDP 更稳（视频、语音、游戏都靠它）</span></span>
+<span class="line"><span>         ✅ 小火箭、Shadowrocket、V2rayNG、Clash 都支持</span></span></code></pre>
+<p><strong>简单选：只要填代理就用 SOCKS5；要全局、想连手机就用 VLESS 链接。</strong></p>
+<h3 id="clash-为什么必须给一个-url-而不是链接">Clash 为什么必须给一个 URL 而不是链接</h3>
+<p><strong>Clash Verge / Mihomo Party 的「订阅」要的是一个能拉取的地址</strong>，不支持直接粘 <code>vless://</code>。所以脚本在服务器上开了个小 HTTP 服务，返回一份 YAML。</p>
+<p><strong>所以那个地址本身是有价值的凭据</strong> —— 这就是为什么提醒你用完关掉。</p>
+<h3 id="什么叫套娃">什么叫「套娃」</h3>
+<p><strong>你自己电脑上已经开着梯子（或 Clash）时，再去连 VPS，那条连接会先被你自己的代理接管，绕一圈才连回来</strong> —— 结果就是超时 / 代理失败。</p>
+<p><strong>解法两选一</strong>：</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>① 填 SOCKS5 之前，先关掉本机梯子     ← 最简单</span></span>
+<span class="line"><span>② Clash 配置里加一条直连规则（脚本已经加好，你不用管）</span></span>
+<span class="line"><span>   - IP-CIDR,你的VPS公网IP/32,DIRECT</span></span></code></pre>
+<h3 id="指纹浏览器为什么必要">指纹浏览器为什么必要</h3>
+<p><strong>很多平台的风控不看你在哪个国家，看你是不是「一个真人」。</strong></p>
+<p>指纹浏览器会伪装浏览器指纹（WebRTC、时区、语言、TLS 指纹），<strong>一个环境 = 一套独立身份</strong>，用于跨境多账号、AI 工具批量注册、独立站和电商后台。</p>
+<p><strong>实测可用的两款</strong>（免费版就够用）：</p>
+<ul>
+<li>🎁 <strong>Roxybrowser</strong>：<a href="https://roxybrowser.cn/invite/T73jtz" target="_blank" rel="noopener">Roxybrowser 注册</a></li>
+<li>🎁 <strong>AdsPower</strong>：<a href="https://www.adspower.net/share/U00Khq" target="_blank" rel="noopener">AdsPower 注册</a>（功能更全，付费档位多）</li>
+</ul>
+<h3 id="这台-vps-拿来日常用-muse-ai">这台 VPS 拿来日常用 Muse AI</h3>
+<p><strong>Meta 刚发的个人 AI 智能体 Muse。</strong> 注意这两件事是分开的：</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>注册 Muse    → 不用 VPS，走云浏览器 + 平台代理</span></span>
+<span class="line"><span>日常用 Muse  → 挂这台美国 VPS，保持美国固定 IP</span></span></code></pre>
+<p><strong>⚠️ 别拿这台 VPS 去注册</strong> —— 实测过，用美国 VPS 挂指纹浏览器注册一样被拒，<strong>问题在浏览器环境，不在 IP</strong>。</p>
+<p><strong>注册具体怎么过，下期出教程。</strong> 这篇先把「日常用哪台 VPS」说清楚：就是你手上这台，不用多花钱。</p>
+<hr>
+<h2 id="相关教程">相关教程</h2>
+<p><a href="/posts/openclaw-30min-guide/">4 个一键脚本（裸机 → OpenClaw → 公网 → 独立站）</a> · <a href="/posts/zaihouse-template-99/">WordPress 独立站一键安装模板包</a> · <a href="/posts/newbie-rewards-2026/">新人注册优惠大全</a> · <a href="/posts/kaggle-comfyui-free-guide/">0 元白嫖 AI 生图（Kaggle 免费 GPU）</a></p>
+<!-- 4 脚本免费下载块（替代 2026-09-23 前面包多 9.9 元引流块） --><div class="free-pack-promo" style="background:linear-gradient(135deg,#ecfdf5 0%,#d1fae5 100%);border:2px solid #10b981;border-radius:12px;padding:24px;margin:32px 0;box-shadow:0 4px 12px rgba(16,185,129,0.15)"><div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px"><div style="background:#10b981;color:white;padding:6px 14px;border-radius:6px;font-weight:700;font-size:13px">🆓 全部免费</div><div style="color:#065f46;font-weight:600;font-size:14px">Apache-2.0 开源 · 4 个一键脚本 + 选择指南</div></div><h3 style="margin:0 0 12px 0;color:#064e3b;font-size:22px">🚀 0 基础跑通跨境电商 · 4 个一键脚本</h3><p style="color:#065f46;margin:0 0 16px 0;font-size:15px;line-height:1.6">耗时一个月 + 花费近万沉淀出的 <strong>4 个一键脚本</strong>（裸机 VPS → OpenClaw → 公网 → 跨境独立站），小白 30 秒对号入座，5-15 分钟跑通。<strong>全部开源免费</strong>。</p><a href="/downloads/zaihouse-pack-v1.1.0.zip" download class="cta" style="display:inline-block;background:#10b981;color:white;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:18px">📥 立即下载 zaihouse-pack-v1.1.0.zip (95 KB)</a><div style="margin-top:16px;font-size:13px;color:#047857">💡 <strong>Apache-2.0 开源协议</strong> · 商用 / 修改 / 分发都可以 · 详情见 <a href="/posts/openclaw-30min-guide/#-完整-4-脚本免费下载" style="color:#047857;text-decoration:underline">主帖下载区</a></div></div><div style="margin-top:32px;padding-top:24px;border-top:1px solid #e5e7eb"><a href="/">← 返回博客首页</a></div></article><aside class="post-toc"><nav aria-label="文章目录"><div class="post-toc-title">目录</div><a href="#-先看视频--9-分-28-秒全程实录">🎬 先看视频 · 9 分 28 秒全程实录</a><a href="#装完你会拿到三样东西">装完你会拿到三样东西</a><a href="#第-1-步--买一台美国-vps">第 1 步 · 买一台美国 VPS</a><a href="#第-2-步--跑脚本">第 2 步 · 跑脚本</a><a href="#第-3-步--三样东西分别怎么填">第 3 步 · 三样东西分别怎么填</a><a href="#-socks5--指纹浏览器--adspower--chrome" class="toc-h3">① SOCKS5 → 指纹浏览器 / AdsPower / Chrome</a><a href="#-链接--小火箭--shadowrocket--v2rayng" class="toc-h3">② 链接 → 小火箭 / Shadowrocket / V2rayNG</a><a href="#-链接--clash-verge--mihomo-party" class="toc-h3">③ 链接 → Clash Verge / Mihomo Party</a><a href="#第-4-步--验证">第 4 步 · 验证</a><a href="#常见问题">常见问题</a><a href="#几条硬提醒">几条硬提醒</a><a href="#原理--为什么是这三样东西">原理 · 为什么是这三样东西</a><a href="#为什么非要静态-ip" class="toc-h3">为什么非要静态 IP</a><a href="#为什么机场的美国节点不能用来注册" class="toc-h3">为什么机场的「美国节点」不能用来注册</a><a href="#为什么-socks5-和-vless-是两回事" class="toc-h3">为什么 SOCKS5 和 VLESS 是两回事</a><a href="#clash-为什么必须给一个-url-而不是链接" class="toc-h3">Clash 为什么必须给一个 URL 而不是链接</a><a href="#什么叫套娃" class="toc-h3">什么叫「套娃」</a><a href="#指纹浏览器为什么必要" class="toc-h3">指纹浏览器为什么必要</a><a href="#这台-vps-拿来日常用-muse-ai" class="toc-h3">这台 VPS 拿来日常用 Muse AI</a><a href="#相关教程">相关教程</a></nav></aside></div><script type="module">document.querySelectorAll(`.post-page pre`).forEach(e=>{let t=document.createElement(`button`);t.type=`button`,t.className=`code-copy`,t.textContent=`复制`,t.addEventListener(`click`,async()=>{let n=e.querySelector(`code`),r=n?n.innerText:e.innerText;try{await navigator.clipboard.writeText(r),t.textContent=`已复制 ✓`,setTimeout(()=>{t.textContent=`复制`},1500)}catch{t.textContent=`复制失败`}}),e.appendChild(t)});var e=Array.from(document.querySelectorAll(`.post-toc a`)),t=e.map(e=>document.getElementById(e.getAttribute(`href`).slice(1))).filter(Boolean),n=()=>{let n=null;for(let e of t)e.getBoundingClientRect().top<=140&&(n=e);e.forEach(e=>e.classList.toggle(`active`,!!n&&e.getAttribute(`href`)===`#`+n.id))};window.addEventListener(`scroll`,n,{passive:!0}),n();</script></main><footer class="site-footer"><div>zai 主理 · 在舍</div><div style="margin-top:6px">信条：用最少的钱、最干净的方法，最简单的操作，把一件想做的事做到能跑。</div><div style="margin-top:8px"><a href="https://zaikafei.com" rel="noopener">zaikafei.com</a> ·<a href="https://shop.zaihouse.com" rel="noopener">shop.zaihouse.com</a> ·<a href="/contact/">关于 / 联系</a></div><div style="margin-top:8px">✉️ <a href="mailto:support@zaihouse.com">support@zaihouse.com</a></div></footer></body></html>
