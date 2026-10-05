@@ -1,0 +1,101 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map(post => ({
+    params: { slug: post.id.replace(/\.md$/, '') },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content, headings } = await render(post);
+const toc = headings.filter(h => h.depth === 2 || h.depth === 3);
+---
+<BaseLayout title={post.data.title} description={post.data.description}>
+<div class="post-layout">
+<article class="post-page">
+<h1>{post.data.title}</h1>
+<div class="post-meta">
+<span>📅 {post.data.date.toISOString().slice(0, 10)}</span>
+<span>⏱ {post.data.readTime || '5 分钟'}</span>
+{post.data.tags && post.data.tags.map(tag => <span class="tag">{tag}</span>)}
+</div>
+<Content />
+
+{post.id !== 'newbie-rewards-2026' && <>
+<!-- 4 脚本免费下载块（替代 2026-09-23 前面包多 9.9 元引流块） -->
+<div class="free-pack-promo" style="background:linear-gradient(135deg,#ecfdf5 0%,#d1fae5 100%);border:2px solid #10b981;border-radius:12px;padding:24px;margin:32px 0;box-shadow:0 4px 12px rgba(16,185,129,0.15)">
+<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px">
+<div style="background:#10b981;color:white;padding:6px 14px;border-radius:6px;font-weight:700;font-size:13px">🆓 全部免费</div>
+<div style="color:#065f46;font-weight:600;font-size:14px">Apache-2.0 开源 · 4 个一键脚本 + 选择指南</div>
+</div>
+
+<h3 style="margin:0 0 12px 0;color:#064e3b;font-size:22px">🚀 0 基础跑通跨境电商 · 4 个一键脚本</h3>
+
+<p style="color:#065f46;margin:0 0 16px 0;font-size:15px;line-height:1.6">
+耗时一个月 + 花费近万沉淀出的 <strong>4 个一键脚本</strong>（裸机 VPS → OpenClaw → 公网 → 跨境独立站），小白 30 秒对号入座，5-15 分钟跑通。<strong>全部开源免费</strong>。
+</p>
+
+<a href="/downloads/zaihouse-pack-v1.1.0.zip" download class="cta" style="display:inline-block;background:#10b981;color:white;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:18px">
+📥 立即下载 zaihouse-pack-v1.1.0.zip (95 KB)
+</a>
+
+<div style="margin-top:16px;font-size:13px;color:#047857">
+💡 <strong>Apache-2.0 开源协议</strong> · 商用 / 修改 / 分发都可以 · 详情见 <a href="/posts/openclaw-30min-guide/#-完整-4-脚本免费下载" style="color:#047857;text-decoration:underline">主帖下载区</a>
+</div>
+</div>
+</>}
+
+<div style="margin-top:32px;padding-top:24px;border-top:1px solid #e5e7eb">
+<a href="/">← 返回博客首页</a>
+</div>
+</article>
+{toc.length >= 2 && (
+<aside class="post-toc">
+<nav aria-label="文章目录">
+<div class="post-toc-title">目录</div>
+{toc.map(h => (
+<a href={`#${h.slug}`} class={h.depth === 3 ? 'toc-h3' : undefined}>{h.text}</a>
+))}
+</nav>
+</aside>
+)}
+</div>
+
+<script>
+document.querySelectorAll('.post-page pre').forEach((pre) => {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'code-copy';
+  btn.textContent = '复制';
+  btn.addEventListener('click', async () => {
+    const code = pre.querySelector('code');
+    const text = code ? code.innerText : pre.innerText;
+    try {
+      await navigator.clipboard.writeText(text);
+      btn.textContent = '已复制 ✓';
+      setTimeout(() => { btn.textContent = '复制'; }, 1500);
+    } catch {
+      btn.textContent = '复制失败';
+    }
+  });
+  pre.appendChild(btn);
+});
+
+// 目录滚动高亮
+const tocLinks = Array.from(document.querySelectorAll('.post-toc a'));
+const tocHeads = tocLinks
+  .map(a => document.getElementById(a.getAttribute('href').slice(1)))
+  .filter(Boolean);
+const spy = () => {
+  let cur = null;
+  for (const h of tocHeads) { if (h.getBoundingClientRect().top <= 140) cur = h; }
+  tocLinks.forEach(a => a.classList.toggle('active', !!cur && a.getAttribute('href') === '#' + cur.id));
+};
+window.addEventListener('scroll', spy, { passive: true });
+spy();
+</script>
+</BaseLayout>

@@ -1,0 +1,498 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+import { readFileSync } from 'node:fs';
+
+const allPosts = await getCollection('blog');
+
+// 置顶优先(置顶内部按 pinOrder 升序, 同序再按发布日倒序), 其余按发布日倒叙
+// 2026-10-04 改回按发布日(date)排，不按 updated。
+// 理由：首页要「一眼看到最新发布的资讯」。改过内容的旧帖不该顶上来把它挤下去。
+// updated 字段保留（可能用在「最近更新」标签上），但不作排序键。
+const byDateDesc = (a: { data: { date: Date } }, b: { data: { date: Date } }) =>
+  b.data.date.getTime() - a.data.date.getTime();
+// 置顶帖手动排序：pinOrder 小的在前；没填的(999)排后面；同序按发布日倒序兜底
+const byPinOrder = (a: { data: { pinOrder?: number; date: Date } }, b: { data: { pinOrder?: number; date: Date } }) => {
+  const ao = a.data.pinOrder ?? 999;
+  const bo = b.data.pinOrder ?? 999;
+  return ao === bo ? byDateDesc(a, b) : ao - bo;
+};
+const pinnedPosts = allPosts.filter(p => p.data.pinned === true).sort(byPinOrder);
+const otherPosts = allPosts.filter(p => !p.data.pinned).sort(byDateDesc);
+const posts = [...pinnedPosts, ...otherPosts];
+
+// ── 系列分类（2026-10-04 新增）──
+// 三个系列，顺序固定（不随文章数变化），栏内按最后修改时间倒叙。
+const SERIES = [
+  { id: 'free',    label: '0 元白嫖' },
+  { id: 'starter', label: '0 基础小白' },
+  { id: 'script',  label: '新人不用手·一键脚本' },
+] as const;
+const SERIES_LABEL: Record<string, string> = Object.fromEntries(SERIES.map(s => [s.id, s.label]));
+
+const seriesCount: Record<string, number> = {};
+posts.forEach(p => {
+  const s = p.data.series;
+  if (s) seriesCount[s] = (seriesCount[s] || 0) + 1;
+});
+
+// 统计
+const totalPosts = posts.length;
+// 视频数：按实际发布内容统计，不是链接数（同内容会同时上 B 站和 YouTube）。
+// 口径（2026-10-02 核实）：
+//   跨境电商全攻略系列  8 支（总览 + 第5/6/7/8/9 集 + …）
+//   Kaggle 免费 GPU 生图 1 支
+//   Kaggle 免费 GPU 生视频（MiniMax H3）1 支
+//   4 个一键脚本演示    1 支
+//   WordPress 模板包安装实录 1 支
+//   新加坡 visa 卡 + ChatGPT Plus 1 支
+// 其中生图、生视频、模板包、脚本这 4 支同时发了 B 站和 YouTube，
+// 站内共 11 个播放入口，但实际内容是 12 支。
+const totalVideos = 12;
+
+// 浏览量：构建时先读 stats/views.json 拿到一个初值（避免构建产物出现「0」）。
+// 真实数字由页面底部的脚本从 /api/stats 拉取并每 30 秒刷新一次。
+// 计数由 blog/serve.cjs 维护，口径是「每刷新一次 +1」，不区分访客。
+//
+// 取「种子值」与「文件里的真实值」两者较大者（2026-10-02 修）。
+// 之前直接用文件里的值，导致「页面先显示 2300 → 30 秒后被接口的 2093 盖掉」，
+// 访客看到数字先涨后跌。取 max 后两边一致，不会回落。
+const SEED_VIEWS = 2300;
+let totalViews = SEED_VIEWS;
+try {
+  const raw = readFileSync(new URL('../stats/views.json', import.meta.url), 'utf8');
+  const s = JSON.parse(raw);
+  const n = Number(s?.total);
+  if (Number.isFinite(n) && n > 0) totalViews = Math.max(SEED_VIEWS, n);
+} catch (e) {
+  // 文件不存在时用种子值 2300，不让构建失败
+}
+
+// 收集所有标签 + 统计
+const tagCount: Record<string, number> = {};
+posts.forEach(p => {
+  (p.data.tags || []).forEach((t: string) => {
+    tagCount[t] = (tagCount[t] || 0) + 1;
+  });
+});
+
+// 标签云：固定位次表保证版式稳定，但把不在表里、却有文章的标签自动补进来。
+// 这样新帖加了新标签不用改代码，下次构建就出现在标签云里。
+const FEATURED_PRIORITY = [
+  '跨境电商出海',
+  'VPS',
+  'OpenClaw 部署脚本',
+  '免费 AI 生图',
+  '十分钟建站',
+  '新人免费福利',
+  'WordPress',
+  'Kaggle 免费 GPU',
+  'ComfyUI',
+  'AI 视频',
+  '不花一分钱',
+];
+const tags = [
+  ...FEATURED_PRIORITY.filter(t => tagCount[t]),
+  ...Object.keys(tagCount)
+    .filter(t => !FEATURED_PRIORITY.includes(t))
+    .sort((a, b) => tagCount[b] - tagCount[a] || a.localeCompare(b, 'zh')),
+];
+
+---
+
+<BaseLayout title="zai 主理 · 跨境电商 / VPS / OpenClaw 实战">
+
+<!-- ========== Hero 区 ========== -->
+<section class="hero">
+<div class="hero-avatar">
+<img src="/avatar.jpg" alt="zai 主理" width="120" height="120" fetchpriority="high" />
+</div>
+
+<h1 class="hero-title">zai 主理 · 在舍</h1>
+<p class="hero-subtitle">信条：用最少的钱、最干净的方法，最简单的操作，把一件想做的事做到能跑。</p>
+
+<p class="hero-desc">
+<b>主聊：</b>跨境电商出海 · VPS / OpenClaw 实战 · AI 工具落地
+</p>
+
+<!-- 数据条 -->
+<div class="hero-stats">
+<div class="stat-item">
+<div class="stat-num">{totalPosts}</div>
+<div class="stat-label">篇文章</div>
+</div>
+<div class="stat-item">
+<div class="stat-num">{totalVideos}+</div>
+<div class="stat-label">个视频</div>
+</div>
+<div class="stat-item">
+<div class="stat-num" data-views-num>{totalViews.toLocaleString('en-US')}</div>
+<div class="stat-label">浏览量</div>
+</div>
+<div class="stat-item">
+<div class="stat-num">5</div>
+<div class="stat-label">个工具包</div>
+</div>
+</div>
+
+<!-- 精品内容入口（吃流量） -->
+<div class="hero-social">
+<a href="/posts/openclaw-30min-guide/" rel="noopener" class="s-btn">OpenClaw 部署脚本</a>
+<a href="/posts/kaggle-comfyui-free-guide/" rel="noopener" class="s-btn">免费 AI 生图</a>
+<a href="/posts/newbie-rewards-2026/" rel="noopener" class="s-btn">新人注册优惠</a>
+<a href="/posts/cross-border-9step-ppt/" rel="noopener" class="s-btn">9 步跨境出海</a>
+<a href="/posts/zaihouse-template-99/" rel="noopener" class="s-btn s-btn-hot">十分钟建站</a>
+</div>
+</section>
+
+<!-- ========== 搜索框 ========== -->
+<section class="search-bar">
+<input
+  type="search"
+  id="post-search"
+  placeholder="搜索文章标题 / 标签 / 描述…"
+  autocomplete="off"
+/>
+<svg class="search-icon" viewBox="0 0 24 24" width="20" height="20">
+<path fill="currentColor" d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 5 1.49-1.49-5-5zm-6 0a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z"/>
+</svg>
+</section>
+
+<!-- ========== 标签云（筛选入口） ========== -->
+<section class="tag-cloud">
+{tags.map(tag => (
+<button class="tag-chip" data-tag={tag}>#{tag} <span class="tag-cnt">{tagCount[tag]}</span></button>
+))}
+</section>
+
+<!-- ========== 文章列表（带系列分类栏） ========== -->
+<div class="list-layout">
+<aside class="series-side">
+<div class="series-side-title">系列分类</div>
+<button class="series-item is-active" data-series="all">
+<span class="si-name">全部</span>
+<span class="si-cnt">{posts.length}</span>
+</button>
+{SERIES.map(s => (
+<button class="series-item" data-series={s.id}>
+<span class="si-name">{s.label}</span>
+<span class="si-cnt">{seriesCount[s.id] || 0}</span>
+</button>
+))}
+</aside>
+
+<main class="site-main" style="padding-top:0">
+<div class="post-list" id="post-list">
+{posts.map(post => {
+  const url = `/posts/${post.id.replace(/\.md$/, '')}/`;
+  const series = post.data.series || '';
+  return (
+<article class={`post-card${post.data.pinned ? ' post-card-pinned' : ''}${post.data.cover ? ' has-cover' : ''}`}
+  data-series={series}
+  data-tags={(post.data.tags || []).join(',')}
+  data-title={post.data.title.toLowerCase()}
+  data-desc={(post.data.description || '').toLowerCase()}>
+<a class="post-cover" href={url} aria-label={post.data.title}>
+{post.data.cover
+  ? <img src={post.data.cover} alt={post.data.title} loading="lazy" />
+  : <div class="cover-fallback" data-series={series}>
+      <span class="cover-series">{SERIES_LABEL[series] || 'ZAIHOUSE'}</span>
+      <span class="cover-title">{post.data.title}</span>
+    </div>}
+</a>
+<div class="post-body">
+<h2><a href={url}>{post.data.title}</a></h2>
+<div class="post-meta">
+{post.data.pinned && <span class="pin-badge">📌 置顶</span>}
+<span>📅 {post.data.date.toISOString().slice(0, 10)}</span>
+<span>⏱ {post.data.readTime || '5 分钟'}</span>
+{post.data.tags && post.data.tags.slice(0, 3).map(tag => <span class="tag">{tag}</span>)}
+</div>
+<p>{post.data.description}</p>
+</div>
+</article>
+)})}
+<p class="post-empty" id="post-empty" style="display:none">没找到匹配的文章 😅</p>
+</div>
+</main>
+</div>
+
+<script is:inline>
+// 浏览量实时刷新：构建时写入初值，这里从 /api/stats 拉真实数字，每 30 秒同步一次。
+// 口径：每刷新一次 +1（由 blog/serve.cjs 计数），不区分访客。
+(function () {
+  var el = document.querySelector('[data-views-num]');
+  if (!el) return;
+  function render(n) {
+    if (typeof n === 'number' && isFinite(n) && n > 0) {
+      el.textContent = n.toLocaleString('en-US');
+    }
+  }
+  function pull() {
+    try {
+      fetch('/api/stats', { cache: 'no-store' })
+        .then(function (r) { return r.json(); })
+        .then(function (d) { if (d && d.ok) render(d.total); })
+        .catch(function () {});
+    } catch (e) {}
+  }
+  pull();
+  setInterval(pull, 30000);
+})();
+</script>
+
+<script is:inline>
+// 搜索
+const searchInput = document.getElementById('post-search');
+const postList = document.getElementById('post-list');
+const postEmpty = document.getElementById('post-empty');
+const postCards = document.querySelectorAll('.post-card');
+
+function applyFilter() {
+  const q = searchInput.value.trim().toLowerCase();
+  let visible = 0;
+  postCards.forEach(card => {
+    const tags = card.dataset.tags || '';
+    const title = card.dataset.title || '';
+    const desc = card.dataset.desc || '';
+    const series = card.dataset.series || '';
+    const matchSeries = activeSeries === 'all' || series === activeSeries;
+    const matchSearch = !q || title.includes(q) || desc.includes(q) || tags.toLowerCase().includes(q);
+    const show = matchSeries && matchSearch;
+    if (show) visible++;
+    card.style.display = show ? '' : 'none';
+  });
+  postEmpty.style.display = visible === 0 ? 'block' : 'none';
+}
+
+searchInput.addEventListener('input', applyFilter);
+
+// 系列分类筛选（与搜索框叠加生效）
+let activeSeries = 'all';
+const seriesBtns = document.querySelectorAll('.series-item');
+seriesBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    activeSeries = btn.dataset.series || 'all';
+    seriesBtns.forEach(b => b.classList.toggle('is-active', b === btn));
+    applyFilter();
+  });
+});
+
+// 标签云筛选
+document.querySelectorAll('.tag-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    searchInput.value = chip.dataset.tag;
+    applyFilter();
+  });
+});
+</script>
+
+</BaseLayout>
+
+<style>
+.hero {
+  padding: 48px 20px 32px;
+  text-align: center;
+  background:
+    linear-gradient(180deg, rgba(254,243,199,.93) 0%, rgba(250,248,243,.82) 100%),
+    url('/banner.jpg') center 32%/cover no-repeat;
+  border-radius: 16px;
+  margin-bottom: 32px;
+  border: 1px solid rgba(245,158,11,.18);
+}
+.hero-avatar { display: flex; justify-content: center; margin-bottom: 16px; }
+.hero-avatar img {
+  width: 120px; height: 120px; border-radius: 50%; object-fit: cover;
+  border: 3px solid var(--accent);
+  box-shadow: 0 8px 28px rgba(245,158,11,.35);
+}
+.hero-title { font-size: 32px; font-weight: 800; margin: 12px 0 4px; color: #111; }
+.hero-subtitle { font-size: 14px; color: #f59e0b; font-weight: 600; letter-spacing: .1em; margin-bottom: 16px; }
+.hero-desc { max-width: 600px; margin: 0 auto 24px; line-height: 1.7; color: #444; font-size: 15px; }
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  max-width: 540px;
+  margin: 24px auto;
+}
+.stat-item {
+  padding: 12px 8px;
+  background: rgba(255,255,255,.7);
+  border-radius: 12px;
+  border: 1px solid rgba(245,158,11,.15);
+}
+.stat-num { font-size: 24px; font-weight: 800; color: #f59e0b; }
+.stat-label { font-size: 12px; color: #777; margin-top: 2px; }
+.hero-social { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.s-btn {
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: #f5f5f5;
+  color: #333;
+  font-size: 13px;
+  text-decoration: none;
+  border: 1px solid #e5e5e5;
+  transition: all .15s;
+}
+.s-btn:hover { background: #f59e0b; color: #fff; border-color: #f59e0b; }
+.s-btn-hot { background: #dc2626; color: #fff; border-color: #dc2626; }
+.s-btn-hot:hover { background: #b91c1c; }
+.s-btn-pay { background: #059669; color: #fff; border-color: #059669; }
+.s-btn-pay:hover { background: #047857; }
+
+.search-bar {
+  position: relative;
+  max-width: 700px;
+  margin: 0 auto 24px;
+}
+#post-search {
+  width: 100%;
+  padding: 14px 20px 14px 48px;
+  border: 2px solid #e5e5e5;
+  border-radius: 24px;
+  font-size: 15px;
+  outline: none;
+  transition: border-color .15s;
+  background: #fff;
+}
+#post-search:focus { border-color: #f59e0b; }
+.search-icon {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+}
+
+.tag-cloud {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+.tag-chip {
+  padding: 4px 12px;
+  border-radius: 14px;
+  background: #fef9c3;
+  color: #a16207;
+  font-size: 12px;
+  cursor: pointer;
+  border: none;
+  transition: all .15s;
+}
+.tag-chip:hover { background: #fde047; }
+.tag-cnt {
+  background: rgba(0,0,0,.08);
+  padding: 0 6px;
+  border-radius: 8px;
+  margin-left: 4px;
+  font-size: 10px;
+}
+
+.post-empty {
+  text-align: center;
+  color: #999;
+  padding: 40px 20px;
+  font-size: 16px;
+}
+
+/* ── 系列分类栏（2026-10-04）── */
+.list-layout {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.series-side {
+  /* 不再固定 168px：分类名变长（如「新人不用手·一键脚本」）会换行错位。
+     改成按内容自适应，宽度上限留给文章列表。 */
+  flex: 0 0 auto;
+  min-width: 148px;
+  max-width: 220px;
+  position: sticky;
+  top: 20px;
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: 14px;
+  padding: 12px 10px;
+}
+.series-side-title {
+  font-size: 12px;
+  color: #999;
+  font-weight: 700;
+  letter-spacing: .08em;
+  padding: 4px 8px 10px;
+  border-bottom: 1px solid #f5f5f5;
+  margin-bottom: 8px;
+}
+.series-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 10px;
+  border: none;
+  background: none;
+  border-radius: 9px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #444;
+  transition: all .15s;
+  text-align: left;
+  white-space: nowrap;
+}
+/* 分类名过长时优雅换行，不撑破侧栏 */
+.series-item .si-name {
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.35;
+}
+.si-cnt {
+  flex: 0 0 auto;
+}
+.series-item:hover { background: #fffbeb; color: #f59e0b; }
+.series-item.is-active {
+  background: #f59e0b;
+  color: #fff;
+  font-weight: 700;
+}
+.si-cnt {
+  font-size: 11px;
+  background: rgba(0,0,0,.06);
+  padding: 1px 7px;
+  border-radius: 8px;
+  color: #888;
+}
+.series-item.is-active .si-cnt { background: rgba(255,255,255,.25); color: #fff; }
+.list-layout .site-main { flex: 1; min-width: 0; }
+
+@media (max-width: 860px) {
+  /* 手机上侧栏变顶部横滑条，不占纵向空间 */
+  .list-layout { display: block; }
+  .series-side {
+    position: static;
+    flex: none;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    margin-bottom: 16px;
+    padding: 8px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .series-side-title { display: none; }
+  .series-item { width: auto; white-space: nowrap; padding: 7px 12px; }
+  .si-cnt { margin-left: 6px; }
+}
+
+@media (max-width: 640px) {
+  .hero { padding: 32px 16px 24px; }
+  .hero-title { font-size: 24px; }
+  .hero-stats { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .stat-num { font-size: 20px; }
+}
+</style>
