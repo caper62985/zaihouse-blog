@@ -1,0 +1,175 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>新人不用手·一键脚本 · 裸机 VPS 5-15 分钟跑通 OpenClaw + 公网 + 跨境独立站 · ZAIHOUSE Blog</title><meta name="description" content="4 个一键脚本，对应 4 种 VPS 状态。裸机 VPS 3-5 分钟跑通 OpenClaw，已装的改配置 3-5 分钟，公网+TG bot 5-10 分钟，一键建完整跨境独立站 10-15 分钟。全部开源免费（Apache-2.0），直接下载。"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><script>
+// 深色模式：优先读本地选择，其次跟随系统。放 head 避免闪烁。
+(function () {
+  try {
+    var t = localStorage.getItem('zai-theme');
+    if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    document.documentElement.dataset.theme = t;
+  } catch (e) {}
+})();
+</script><!-- 旧的自建 pixel 埋点已移除（2026-10-02）：analytics/worker.js 的路由从未绑定成功，
+     zaihouse.com/__/pixel 一直返 404，每页白发一个请求且数据全丢。
+     统计改由 Cloudflare Web Analytics 在边缘自动注入，无需代码。 --><link rel="stylesheet" href="/zaihouse-blog/_astro/BaseLayout.DdqeB0Oc.css"></head><body><header class="site-header"><div class="site-header-inner"><a href="/" class="site-logo"><span class="site-logo-icon">Z</span><span>zai 主理 · 在舍</span></a><nav class="site-nav"><a href="/">博客</a><a href="https://zaihouse.com" rel="noopener">主站</a><a href="https://shop.zaihouse.com" rel="noopener">小店</a><a href="/posts/zaihouse-template-99/" rel="noopener">十分钟个人站</a><a href="/contact/">联系</a><button class="theme-toggle" id="theme-toggle" title="切换深色/浅色" aria-label="切换深色/浅色">🌙</button></nav></div></header><div class="read-progress" id="read-progress" style="display:none"></div><script>
+// 主题切换
+(function () {
+  var btn = document.getElementById('theme-toggle');
+  function paint() {
+    btn.textContent = document.documentElement.dataset.theme === 'dark' ? '☀️' : '🌙';
+  }
+  paint();
+  btn.addEventListener('click', function () {
+    var next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem('zai-theme', next); } catch (e) {}
+    paint();
+  });
+})();
+</script><main class="site-main"><div class="post-layout"><article class="post-page"><h1>新人不用手·一键脚本 · 裸机 VPS 5-15 分钟跑通 OpenClaw + 公网 + 跨境独立站</h1><div class="post-meta"><span>📅 2026-09-16</span><span>⏱ 5-15 分钟</span><span class="tag">OpenClaw 部署脚本</span><span class="tag">一键脚本</span><span class="tag">VPS</span><span class="tag">跨境电商出海</span><span class="tag">免费脚本</span></div><h1 id="新人不用手一键脚本--裸机-vps-5-15-分钟跑通-openclaw">新人不用手·一键脚本 · 裸机 VPS 5-15 分钟跑通 OpenClaw</h1>
+<blockquote>
+<p>裸机 VPS → OpenClaw → 公网 → 跨境独立站，<strong>小白 30 秒对号入座</strong>，5-15 分钟跑通。</p>
+</blockquote>
+<hr>
+<h2 id="-先看视频--10-分-46-秒完整演示">🎬 先看视频 · 10 分 46 秒完整演示</h2>
+<a class="yt-hero-card" href="https://youtu.be/0ev0_bMLxBM" target="_blank" rel="noopener">
+<span class="yt-hero-card-thumb"><img src="/ppt/yt/0ev0_bMLxBM.jpg" width="1920" height="1080" alt="4 个一键脚本完整演示视频封面"></span>
+<span class="yt-hero-card-body">
+<span class="yt-card-eyebrow">YouTube</span>
+<span class="yt-hero-card-title">新人不用手·一键脚本 · 裸机 VPS 5-15 分钟跑通 OpenClaw + 公网 + 跨境独立站</span>
+<span class="yt-hero-card-sub">耗时一个月 + 花费近万沉淀出的 4 个一键脚本 · 全部开源免费</span>
+<span class="yt-hero-card-cta"><span class="yt-play-icon"></span> YouTube 观看完整版</span>
+</span>
+<span class="yt-hero-card-arrow">→</span>
+</a>
+<hr>
+<h2 id="-免费4-个一键脚本全部开源">🎁 免费：4 个一键脚本全部开源</h2>
+<p><strong>裸机 VPS 3-5 分钟跑通 OpenClaw</strong>，不用自己装任何东西。脚本在本页<strong>下方下载区</strong>，Apache-2.0 免费，商用 / 修改 / 分发都可以。</p>
+<blockquote>
+<p>⚠️ <strong>裸机脚本只装 OpenClaw + 配 API key</strong>。要公网 / TG bot / 跨境站 → 用包里的 <code>openclaw_deploy.sh</code> / <code>zaihouse_build.sh</code>。</p>
+<p>👉 先去 <a href="https://cloud.siliconflow.cn/i/kIJ2uUha" target="_blank" rel="noopener">cloud.siliconflow.cn/i/kIJ2uUha</a> 拿 API key（推荐链接 · 新人优惠）</p>
+</blockquote>
+<hr>
+<h2 id="-你的-vps-状态完整-4-脚本决策">🎯 你的 VPS 状态？完整 4 脚本决策</h2>
+<table>
+<thead>
+<tr>
+<th>VPS 状态</th>
+<th>用哪个脚本</th>
+<th>时间</th>
+<th>下载</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>🆕 <strong>全新 VPS（裸机 Ubuntu）</strong></td>
+<td><strong>一键跑通_全新VPS.sh</strong></td>
+<td><strong>3-5 分钟</strong></td>
+<td><a href="#-%E5%AE%8C%E6%95%B4-4-%E8%84%9A%E6%9C%AC%E5%85%8D%E8%B4%B9%E4%B8%8B%E8%BD%BD">下载区</a></td>
+</tr>
+<tr>
+<td>✅ OpenClaw 已装，没公网</td>
+<td>openclaw_deploy.sh</td>
+<td>5-10 分钟</td>
+<td><a href="#-%E5%AE%8C%E6%95%B4-4-%E8%84%9A%E6%9C%AC%E5%85%8D%E8%B4%B9%E4%B8%8B%E8%BD%BD">下载区</a></td>
+</tr>
+<tr>
+<td>✅ OpenClaw 已跑，要改配置</td>
+<td>openclaw_quickstart.sh</td>
+<td>3-5 分钟</td>
+<td><a href="#-%E5%AE%8C%E6%95%B4-4-%E8%84%9A%E6%9C%AC%E5%85%8D%E8%B4%B9%E4%B8%8B%E8%BD%BD">下载区</a></td>
+</tr>
+<tr>
+<td>🏗️ 直接做完整跨境独立站</td>
+<td>zaihouse_build.sh</td>
+<td>10-15 分钟</td>
+<td><a href="#-%E5%AE%8C%E6%95%B4-4-%E8%84%9A%E6%9C%AC%E5%85%8D%E8%B4%B9%E4%B8%8B%E8%BD%BD">下载区</a></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="-完整-4-脚本免费下载">📦 完整 4 脚本免费下载</h2>
+<p><strong>2026-09-23 更新：4 脚本 + 选择指南全部开源免费（Apache-2.0），面包多付费档已下架。</strong></p>
+<p><strong>一键打包下载</strong>（95 KB · 8 个文件 · Apache-2.0）：</p>
+<p><a href="/downloads/zaihouse-pack-v1.1.0.zip" style="display:inline-block;padding:10px 22px;background:#059669;color:#fff;border-radius:8px;font-weight:600;text-decoration:none">⬇️ 下载 zaihouse-pack v1.1.0</a></p>
+<blockquote>
+<p>💡 <strong>v1.1.0 修好了裸机首装装不上的问题</strong>：Node 版本、gateway 启动参数、配置路径三处都改过了。新买 VPS 直接下这个版本，不用再去 GitHub 拿源码。
+<strong>想要 GitHub 仓库</strong> → <a href="https://github.com/caper62985/zaihouse-pack" target="_blank" rel="noopener">caper62985/zaihouse-pack</a></p>
+</blockquote>
+<p><strong>包内含 8 个文件</strong>：</p>
+<ul>
+<li>✅ <code>一键跑通_全新VPS.sh</code> — 裸机 VPS 装 OpenClaw</li>
+<li>✅ <code>openclaw_deploy.sh</code> — OpenClaw + 公网 + TG bot</li>
+<li>✅ <code>openclaw_quickstart.sh</code> — 已装 OpenClaw 改配置</li>
+<li>✅ <code>zaihouse_build.sh</code> — 完整跨境独立站一键建站</li>
+<li>✅ <code>选哪个脚本.html</code> — 30 秒对号入座</li>
+<li>✅ <code>LICENSE</code> — Apache-2.0 开源协议</li>
+<li>✅ <code>README.md</code> — 使用说明</li>
+<li>✅ <code>CHANGELOG.md</code> — 版本记录</li>
+</ul>
+<blockquote>
+<p><strong>API provider 支持</strong>：百炼 / OpenAI / Anthropic / DeepSeek / <strong>智谱 GLM（免费，不充值就能用）</strong></p>
+</blockquote>
+<p><strong>怎么用（3 步）</strong>：</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6A737D"># 1. 上传到 VPS（你电脑执行）</span></span>
+<span class="line"><span style="color:#B392F0">scp</span><span style="color:#9ECBFF"> zaihouse-pack-v1.1.0.zip</span><span style="color:#9ECBFF"> root@你的VPS-IP:/root/</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D"># 2. 解压 + 跑</span></span>
+<span class="line"><span style="color:#79B8FF">cd</span><span style="color:#9ECBFF"> /root</span></span>
+<span class="line"><span style="color:#B392F0">unzip</span><span style="color:#9ECBFF"> zaihouse-pack-v1.1.0.zip</span></span>
+<span class="line"><span style="color:#B392F0">bash</span><span style="color:#9ECBFF"> 一键跑通_全新VPS.sh</span><span style="color:#6A737D">    # 或其他 3 个脚本（看选哪个脚本.html）</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D"># 3. 验证</span></span>
+<span class="line"><span style="color:#B392F0">curl</span><span style="color:#9ECBFF"> http://localhost:18789/healthz</span></span></code></pre>
+<hr>
+<h2 id="-视频演示--独立站模板-v14真实安装实录">🎬 视频演示 · 独立站模板 v1.4（真实安装实录）</h2>
+<p><strong>先看视频再决定要不要动手</strong> —— 下面这段是 <a href="https://my.racknerd.com/aff.php?aff=21343" target="_blank" rel="noopener"><strong>RackNerd 洛杉矶 VPS</strong></a> 上<strong>从零安装</strong>的完整实录，2 分 29 秒，包含装完的站点实拍：</p>
+<video controls preload="none" style="width:100%;max-width:860px;border-radius:12px;display:block;margin:16px 0" poster="">
+  <source src="/downloads/zaihouse-install-demo.mp4" type="video/mp4">
+  你的浏览器不支持 video 标签，<a href="/downloads/zaihouse-install-demo.mp4" target="_blank" rel="noopener">点这里用浏览器打开</a>。
+</video>
+<p><strong>视频里能看到的</strong>：装完的站点有完整样式、分类名正确、商品图配对、没有默认内容。</p>
+<p><strong>在 B 站看同一支视频</strong>（手机上看更方便，不卡）：</p>
+<a class="yt-hero-card" href="https://www.bilibili.com/video/BV1hBam6eEA9" target="_blank" rel="noopener">
+<span class="yt-hero-card-thumb"><img src="/ppt/yt/BV1hBam6eEA9.jpg" width="1672" height="940" alt="独立站不用从零建 WordPress 一键安装模板包 10 分钟上线 视频封面"></span>
+<span class="yt-hero-card-body">
+<span class="yt-card-eyebrow">📺 B 站</span>
+<span class="yt-hero-card-title">独立站不用从零建 · WordPress 一键安装模板包 10 分钟上线</span>
+<span class="yt-hero-card-sub">洛杉矶 VPS 实拍，从空服务器到能上架 · 2 分 30 秒</span>
+<span class="yt-hero-card-cta"><span class="yt-play-icon"></span> B 站观看完整版</span>
+</span>
+<span class="yt-hero-card-arrow">→</span>
+</a>
+<p><strong>配套 WordPress 模板包 v1.4（付费）</strong> —— 视频看完想要包，或想直接拿现成的：</p>
+<a href="/posts/zaihouse-template-99/" style="display:inline-block;background:#10b981;color:white;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:18px">
+💬 咨询购买 zaihouse-template v1.4
+</a>
+<blockquote>
+<p>ℹ️ <strong>推荐说明</strong>：上面 RackNerd 是推荐 / 邀请链接，你通过它注册时商家会给本站一份<strong>推荐奖励</strong>，<strong>但不会向你多收任何一分钱</strong>——你自己该拿的优惠和奖励照拿不误，不用任何链接也能注册。</p>
+</blockquote>
+<hr>
+<h2 id="-视频演示--海外也能直接看">🎬 视频演示 · 海外也能直接看</h2>
+<blockquote>
+<p>📺 <strong>YouTube</strong>：<a href="https://youtu.be/0ev0_bMLxBM" target="_blank" rel="noopener">4个一键脚本 · 裸机 VPS 5-15 分钟跑通 OpenClaw + 公网 + 跨境独立站</a>（10 分 46 秒）</p>
+<p>🎬 频道：YouTube <strong>@ZAIHOUSE-COM</strong></p>
+</blockquote>
+<blockquote>
+<p>🎬 <strong>订阅 + 评论区留言</strong>：想看 deploy / quickstart / zaihouse_build 单个脚本的详细演示。</p>
+<p><strong>完整 4 脚本</strong> → 见上方「📦 完整 4 脚本免费下载」区（已开源）。</p>
+</blockquote>
+<hr>
+<h2 id="-配套资源">📚 配套资源</h2>
+<ul>
+<li>📖 <strong>9 步跨境教程</strong>：<a href="/posts/cross-border-9step-ppt/">blog.zaihouse.com/posts/cross-border-9step-ppt/</a></li>
+<li>🎁 <strong>新人全套注册优惠福利</strong>（参考）：<a href="/posts/newbie-rewards-2026/">/posts/newbie-rewards-2026/</a></li>
+<li>🛠️ <strong>OpenClaw 文档</strong>：<a href="https://blog.zaihouse.com">blog.zaihouse.com</a></li>
+<li>💻 <strong>硅基流动</strong>（AI 模型 API）：<a href="https://cloud.siliconflow.cn/i/kIJ2uUha">cloud.siliconflow.cn/i/kIJ2uUha</a></li>
+<li>📱 <strong>mesimgo</strong>（海外手机号）：<a href="https://mesimgo.com/zh-tw?ref=2I3ZKMEJ">mesimgo.com/zh-tw?ref=2I3ZKMEJ</a></li>
+<li>💳 <strong>Bybit</strong>（海外支付/收款，最高 120 USDT）：<a href="https://www.bybitglobal.com/invite?ref=ENAPZGG">bybitglobal.com/invite?ref=ENAPZGG</a></li>
+</ul>
+<hr>
+<h2 id="️-合规提示">⚠️ 合规提示</h2>
+<ul>
+<li>所有优惠链接仅供新人参考，实际优惠以平台官网为准</li>
+<li>请使用真实身份信息注册，确保符合当地法律法规</li>
+<li>跨境收款需海外主体（香港 / 英国 / 美国）</li>
+</ul>
+<!-- 4 脚本免费下载块（替代 2026-09-23 前面包多 9.9 元引流块） --><div class="free-pack-promo" style="background:linear-gradient(135deg,#ecfdf5 0%,#d1fae5 100%);border:2px solid #10b981;border-radius:12px;padding:24px;margin:32px 0;box-shadow:0 4px 12px rgba(16,185,129,0.15)"><div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px"><div style="background:#10b981;color:white;padding:6px 14px;border-radius:6px;font-weight:700;font-size:13px">🆓 全部免费</div><div style="color:#065f46;font-weight:600;font-size:14px">Apache-2.0 开源 · 4 个一键脚本 + 选择指南</div></div><h3 style="margin:0 0 12px 0;color:#064e3b;font-size:22px">🚀 0 基础跑通跨境电商 · 4 个一键脚本</h3><p style="color:#065f46;margin:0 0 16px 0;font-size:15px;line-height:1.6">耗时一个月 + 花费近万沉淀出的 <strong>4 个一键脚本</strong>（裸机 VPS → OpenClaw → 公网 → 跨境独立站），小白 30 秒对号入座，5-15 分钟跑通。<strong>全部开源免费</strong>。</p><a href="/downloads/zaihouse-pack-v1.1.0.zip" download class="cta" style="display:inline-block;background:#10b981;color:white;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:18px">📥 立即下载 zaihouse-pack-v1.1.0.zip (95 KB)</a><div style="margin-top:16px;font-size:13px;color:#047857">💡 <strong>Apache-2.0 开源协议</strong> · 商用 / 修改 / 分发都可以 · 详情见 <a href="/posts/openclaw-30min-guide/#-完整-4-脚本免费下载" style="color:#047857;text-decoration:underline">主帖下载区</a></div></div><div style="margin-top:32px;padding-top:24px;border-top:1px solid #e5e7eb"><a href="/">← 返回博客首页</a></div></article><aside class="post-toc"><nav aria-label="文章目录"><div class="post-toc-title">目录</div><a href="#-先看视频--10-分-46-秒完整演示">🎬 先看视频 · 10 分 46 秒完整演示</a><a href="#-免费4-个一键脚本全部开源">🎁 免费：4 个一键脚本全部开源</a><a href="#-你的-vps-状态完整-4-脚本决策">🎯 你的 VPS 状态？完整 4 脚本决策</a><a href="#-完整-4-脚本免费下载">📦 完整 4 脚本免费下载</a><a href="#-视频演示--独立站模板-v14真实安装实录">🎬 视频演示 · 独立站模板 v1.4（真实安装实录）</a><a href="#-视频演示--海外也能直接看">🎬 视频演示 · 海外也能直接看</a><a href="#-配套资源">📚 配套资源</a><a href="#️-合规提示">⚠️ 合规提示</a></nav></aside></div><script type="module">document.querySelectorAll(`.post-page pre`).forEach(e=>{let t=document.createElement(`button`);t.type=`button`,t.className=`code-copy`,t.textContent=`复制`,t.addEventListener(`click`,async()=>{let n=e.querySelector(`code`),r=n?n.innerText:e.innerText;try{await navigator.clipboard.writeText(r),t.textContent=`已复制 ✓`,setTimeout(()=>{t.textContent=`复制`},1500)}catch{t.textContent=`复制失败`}}),e.appendChild(t)});var e=Array.from(document.querySelectorAll(`.post-toc a`)),t=e.map(e=>document.getElementById(e.getAttribute(`href`).slice(1))).filter(Boolean),n=()=>{let n=null;for(let e of t)e.getBoundingClientRect().top<=140&&(n=e);e.forEach(e=>e.classList.toggle(`active`,!!n&&e.getAttribute(`href`)===`#`+n.id))};window.addEventListener(`scroll`,n,{passive:!0}),n();</script></main><footer class="site-footer"><div>zai 主理 · 在舍</div><div style="margin-top:6px">信条：用最少的钱、最干净的方法，最简单的操作，把一件想做的事做到能跑。</div><div style="margin-top:8px"><a href="https://zaikafei.com" rel="noopener">zaikafei.com</a> ·<a href="https://shop.zaihouse.com" rel="noopener">shop.zaihouse.com</a> ·<a href="/contact/">关于 / 联系</a></div><div style="margin-top:8px">✉️ <a href="mailto:support@zaihouse.com">support@zaihouse.com</a></div></footer></body></html>
