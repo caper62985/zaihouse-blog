@@ -1,0 +1,82 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+const { title, description = 'zai 主理 · 跨境电商 / VPS / OpenClaw 实战教程' } = Astro.props;
+---
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{title} · ZAIHOUSE Blog</title>
+<meta name="description" content={description}>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<script is:inline>
+// 深色模式：优先读本地选择，其次跟随系统。放 head 避免闪烁。
+(function () {
+  try {
+    var t = localStorage.getItem('zai-theme');
+    if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    document.documentElement.dataset.theme = t;
+  } catch (e) {}
+})();
+</script>
+<!-- 旧的自建 pixel 埋点已移除（2026-10-02）：analytics/worker.js 的路由从未绑定成功，
+     zaihouse.com/__/pixel 一直返 404，每页白发一个请求且数据全丢。
+     统计改由 Cloudflare Web Analytics 在边缘自动注入，无需代码。 -->
+</head>
+<body>
+<header class="site-header">
+<div class="site-header-inner">
+<a href="/" class="site-logo">
+<span class="site-logo-icon">Z</span>
+<span>zai 主理 · 在舍</span>
+</a>
+<nav class="site-nav">
+<a href="/">博客</a>
+<a href="https://zaihouse.com" rel="noopener">主站</a>
+<a href="https://shop.zaihouse.com" rel="noopener">小店</a>
+<a href="/posts/zaihouse-template-99/" rel="noopener">十分钟个人站</a>
+<a href="/contact/">联系</a>
+<button class="theme-toggle" id="theme-toggle" title="切换深色/浅色" aria-label="切换深色/浅色">🌙</button>
+</nav>
+</div>
+</header>
+<div class="read-progress" id="read-progress" style="display:none"></div>
+<script is:inline>
+// 主题切换
+(function () {
+  var btn = document.getElementById('theme-toggle');
+  function paint() {
+    btn.textContent = document.documentElement.dataset.theme === 'dark' ? '☀️' : '🌙';
+  }
+  paint();
+  btn.addEventListener('click', function () {
+    var next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem('zai-theme', next); } catch (e) {}
+    paint();
+  });
+})();
+</script>
+<main class="site-main">
+<slot />
+</main>
+<footer class="site-footer">
+<div>zai 主理 · 在舍</div>
+<div style="margin-top:6px">信条：用最少的钱、最干净的方法，最简单的操作，把一件想做的事做到能跑。</div>
+<div style="margin-top:8px">
+<a href="https://zaikafei.com" rel="noopener">zaikafei.com</a> ·
+<a href="https://shop.zaihouse.com" rel="noopener">shop.zaihouse.com</a> ·
+<a href="/contact/">关于 / 联系</a>
+</div>
+<div style="margin-top:8px">
+✉️ <a href="mailto:support@zaihouse.com">support@zaihouse.com</a>
+</div>
+</footer>
+</body>
+</html>
